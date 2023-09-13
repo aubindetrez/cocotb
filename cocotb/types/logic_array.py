@@ -124,7 +124,10 @@ class LogicArray(Array[Logic]):
         TypeError: When invalid argument types are used.
     """
 
-    __slots__ = ()
+    __slots__ = (
+            "_dirty",
+            "_integer",
+            )
 
     @typing.overload
     def __init__(
@@ -183,6 +186,8 @@ class LogicArray(Array[Logic]):
             raise ValueError(
                 f"value of length {len(self._value)} will not fit in {self._range}"
             )
+        self._dirty = True # self._integer needs to be updated
+        self._integer = 0 # Updated when needed, if self._dirty is set
 
     def reverse(self: Self) -> Self:
         """
@@ -204,10 +209,13 @@ class LogicArray(Array[Logic]):
         """
         Raises ValueError if the values cannot be converted to binary ('X' or 'Z')
         """
-        value = 0
-        for bit in self:
-            value = value << 1 | int(bit)
-        return value
+        if self._dirty:
+            value = 0
+            for bit in self:
+                value = value << 1 | int(bit)
+            self._integer = value
+            self._dirty = False
+        return self._integer
 
     def __eq__(self, other):
         """
@@ -280,6 +288,7 @@ class LogicArray(Array[Logic]):
         item: typing.Union[int, slice],
         value: typing.Union[LogicConstructibleT, typing.Iterable[LogicConstructibleT]],
     ) -> None:
+        self._dirty = True # need to refresh self._integer
         if isinstance(item, int):
             super().__setitem__(item, Logic(typing.cast(LogicConstructibleT, value)))
         elif isinstance(item, slice):
@@ -386,6 +395,7 @@ class LogicArray(Array[Logic]):
         return self.integer * int(other)
 
     def __imul__(self, other):
+        self._dirty = True # need to refresh self._integer
         if isinstance(other, type(self)):
             return self.__mul__(other)
         self.integer = self.integer * int(other)
@@ -455,6 +465,7 @@ class LogicArray(Array[Logic]):
         >>> bin(b)
         '0b1001'
         """
+        self._dirty = True # need to refresh self._integer
         result = self | other  # Already check type and length
         self._value = result._value
         return self
@@ -469,6 +480,7 @@ class LogicArray(Array[Logic]):
         >>> bin(b)
         '0b1001'
         """
+        self._dirty = True # need to refresh self._integer
         result = self ^ other  # Already check type and length
         self._value = result._value
         return self
@@ -483,6 +495,7 @@ class LogicArray(Array[Logic]):
         >>> bin(b)
         '0b1001'
         """
+        self._dirty = True # need to refresh self._integer
         result = self & other  # Already check type and length
         self._value = result._value
         return self
@@ -497,6 +510,7 @@ class LogicArray(Array[Logic]):
         >>> bin(a)
         '0b100'
         """
+        self._dirty = True # need to refresh self._integer
         result = self + other  # Already check type and length
         self._value = result._value
         return self
