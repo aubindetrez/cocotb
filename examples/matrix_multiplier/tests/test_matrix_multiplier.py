@@ -1,7 +1,6 @@
 # This file is public domain, it can be freely copied without restrictions.
 # SPDX-License-Identifier: CC0-1.0
 
-import math
 import os
 import sys
 from pathlib import Path
@@ -14,7 +13,7 @@ from cocotb.handle import SimHandleBase
 from cocotb.queue import Queue
 from cocotb.runner import get_runner
 from cocotb.triggers import RisingEdge
-from cocotb.types import LogicArray, Range
+from cocotb.types import LogicArray
 
 NUM_SAMPLES = int(os.environ.get("NUM_SAMPLES", 3000))
 if cocotb.simulator.is_running():
@@ -118,8 +117,6 @@ class MatrixMultiplierTester:
         A_ROWS = self.dut.A_ROWS.value
         A_COLUMNS_B_ROWS = self.dut.A_COLUMNS_B_ROWS.value
         B_COLUMNS = self.dut.B_COLUMNS.value
-        DATA_WIDTH = self.dut.DATA_WIDTH.value
-        n_bits = (DATA_WIDTH * 2) + math.ceil(math.log2(A_COLUMNS_B_ROWS))
         return [
             LogicArray(
                 value=sum(
@@ -128,8 +125,7 @@ class MatrixMultiplierTester:
                         * b_matrix[(n * B_COLUMNS) + j]
                         for n in range(A_COLUMNS_B_ROWS)
                     ]
-                ),
-                range=Range(n_bits - 1, "downto", 0),
+                )
             )
             for i in range(A_ROWS)
             for j in range(B_COLUMNS)

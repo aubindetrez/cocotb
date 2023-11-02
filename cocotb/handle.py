@@ -38,7 +38,7 @@ from typing import Optional
 import cocotb
 from cocotb import simulator
 from cocotb.log import SimLog
-from cocotb.types import Logic, LogicArray, Range
+from cocotb.types import Logic, LogicArray
 
 # Only issue a warning for each deprecated attribute access
 _deprecation_warned = set()
@@ -573,7 +573,7 @@ class ConstantObject(NonHierarchyObject):
             # the value may be 'str' or something else that can be converted
             # to LogicArray
             val = self._handle.get_signal_val_binstr()
-            self._value = LogicArray(value=val, range=Range(len(val) - 1, "downto", 0))
+            self._value = LogicArray(value=val)
 
     def __int__(self):
         return int(self.value)
@@ -804,7 +804,7 @@ class ModifiableObject(NonConstantObject):
                     return
 
                 # For both value < 0 and value >= 0
-                value = LogicArray(value=value, range=Range(len(self) - 1, "downto", 0))
+                value = LogicArray(value=value)
             else:
                 raise OverflowError(
                     "Int value ({!r}) out of range for assignment of {!r}-bit signal ({!r})".format(
@@ -843,7 +843,7 @@ class ModifiableObject(NonConstantObject):
 
             for val in vallist:
                 num = (num << value["bits"]) + val
-            value = LogicArray(value=num, range=Range(len(self) - 1, "downto", 0))
+            value = LogicArray(value=num)
 
         elif isinstance(value, LogicArray):
             if len(self) != len(value):
@@ -879,7 +879,7 @@ class ModifiableObject(NonConstantObject):
     @NonConstantObject.value.getter
     def value(self) -> LogicArray:
         binstr = self._handle.get_signal_val_binstr()
-        result = LogicArray(value=binstr, range=Range(len(binstr) - 1, "downto", 0))
+        result = LogicArray(value=binstr)
         return result
 
     def __int__(self):
